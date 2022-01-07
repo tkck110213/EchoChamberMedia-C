@@ -32,13 +32,17 @@ tuple<vector, vector> UserAgent:: divide_post(SNS &sns){
             break;
         }
     }
-
     return forward_as_tuple(similar_post, unsimilar_post);
-
 }
 
-void UserAgent::post(int time, SNS &sns){
-    Message msg = {"post", time, myid, myid, o};
+void UserAgent::post(int time, SNS &sns, vector<Message> &similar_post){
+    if(random_uniform(0.0, 1.0) < p){//repost
+        int repost_msg = random_int(0, similar_post.size());
+        Message msg = {"repost", time, myid, similar_post[repost_msg].post_user, similar_post[repost_msg].opinion};
+    }
+    else{//post
+        Message msg = {"post", time, myid, myid, o};
+    }
     sns.push(msg);
 }
 
