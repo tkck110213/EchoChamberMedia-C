@@ -6,11 +6,11 @@
 using namespace std;
 
 //Agent node on sns network
-struct struct_node
+struct node
 {
-  int node_num;
-  vector<int> in;
-  vector<int> out;
+  int node_id;
+  vector<int> follower;//follower
+  vector<int> follow;//follow
   float color;
   string label;
 };

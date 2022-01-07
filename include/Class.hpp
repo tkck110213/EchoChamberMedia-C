@@ -4,15 +4,18 @@
 #include "Struct.hpp"
 #include "Const.hpp"
 using namespace std;
+#include <tuple>
+#include <cmath>
 
 //Class as SNS
 class SNS{
     public:
         vector<Message> msgdb;
-        vector<struct_node> graph;
+        vector<node> network;
         int N;
         int E;
         SNS(int N, int E);
+        vector<int> get_follow(int user_id);
         void push(Message msg);
         void remove_edge(int start, int end);
         void add_edge(int start, int end);
@@ -24,6 +27,7 @@ class UserAgent
     public:
         //UserAgent(int myid);
         void initialize(int myid);
+        tuple<vector, vector> divide_post(SNS &sns); 
         void influence();
         void post(int time, SNS &sns);
         //void refollow();

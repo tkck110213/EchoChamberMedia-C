@@ -7,14 +7,14 @@ SNS::SNS(int N, int E){
   this->E = E;
 
   //グラフのノード数を人数分にする(最初は一つのノードだけを宣言している)
-  graph.resize(N);
+  network.resize(N);
 
   //ノードに番号を付与する
   for(int i = 0; i < N; i++){
-    graph[i].node_num = i;
+    network[i].node_id = i;
   }
   //SNSネットワークを作成
-  er_directed_graph_generator(graph, N, E);
+  er_directed_network_generator(network, N, E);
 }
 
 //クラスのメソッド定義
@@ -24,27 +24,28 @@ void SNS::push(Message msg){
 
 void SNS::remove_edge(int start, int end){
 
-  for(auto itr = graph[start].out.begin(); itr != graph[start].out.end(); ++itr) {
+  for(auto itr = network[start].follow.begin(); itr != network[start].follow.end(); ++itr) {
       //*itr でイテレータの指す要素を参照
     if(*itr == end){
-      graph[start].out.erase(itr);
+      network[start].follow.erase(itr);
       break;
     }
   }
 
-  for(auto itr = graph[end].in.begin(); itr != graph[end].in.end(); ++itr) 
+  for(auto itr = network[end].follower.begin(); itr != network[end].follower.end(); ++itr) 
   {
       //*itr でイテレータの指す要素を参照
     if(*itr == start){
-      graph[end].int.erase(itr);
+      network[end].follower.erase(itr);
       break;
     }
   }
   
 }
 
+
 //ネットワークの定義関数
-void er_directed_graph_generator(vector<struct_node> &graph, int vertex, int edge){
+void er_directed_network_generator(vector<node> &network, int vertex, int edge){
   int start_node, end_node;
 
   //ノードのペアの組み合わせテーブル size = [vertex][vertex]
@@ -56,7 +57,7 @@ void er_directed_graph_generator(vector<struct_node> &graph, int vertex, int edg
       start_node = random_int(0, vertex-1);
       //自分以外のすべてのノードとすでに接続されている場合はもう一度start_nodeを選択する
       //自分以外のノード数 = vertex - 1
-      if(graph[start_node].out.size() < vertex - 1){
+      if(network[start_node].follow.size() < vertex - 1){
         break;
       }
     }
@@ -68,9 +69,9 @@ void er_directed_graph_generator(vector<struct_node> &graph, int vertex, int edg
       }
     }
     //ノードaのoutノード一覧にbを追加
-    graph[start_node].out.push_back(end_node);
+    network[start_node].follow.push_back(end_node);
     //ノードbのinノード一覧にaを追加
-    graph[end_node].in.push_back(start_node);
+    network[end_node].follower.push_back(start_node);
     //ノードテーブルを更新
     selected_node[start_node][end_node] = 1;
   }
