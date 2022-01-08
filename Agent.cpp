@@ -1,5 +1,6 @@
 #include "include/Prottype.hpp"
 
+//divide screen posts follow bounded confidence(ε)
 tuple<vector, vector> UserAgent:: divide_post(SNS &sns){
     //get my screen post
     vector<int> &follows = sns.network[myid].follow;
@@ -46,8 +47,20 @@ void UserAgent::post(int time, SNS &sns, vector<Message> &similar_post){
     sns.push(msg);
 }
 
-void UserAgent::influence(){
+void UserAgent::influence(vector<Message> &similar_post){
+    vector<float> diffrence_opinion;
+    float average_diffrence_opinion;
 
+    //すべての意見差を求める
+    for(int i = 0; i < similar_post.size(); i++){
+        diffrence_opinion.push_back(similar_post[i].opinion - o);
+    }
+
+    //全意見差の平均を求める
+    average_diffrence_opinion = accumulate(diffrence_opinion.begin(), diffrence_opinion.end(), 0.0) / diffrence_opinion.size();
+
+    //影響を受ける
+    o += (M * average_diffrence_opinion);
 }
 
 void UserAgent::refollow(){
