@@ -1,12 +1,12 @@
 #include "include/Prottype.hpp"
-//UserAgent::UserAgent(unsigned short int mynum)
-UserAgent::UserAgent(int mynum)
+//UserAgent::UserAgent(unsigned short int myid)
+void UserAgent::initialize(int myid)
 {
-    this->mynum = mynum;
+    myid = myid;
     //ensure capacity of screen to size l 
-    this->screen.reserve(l);
+    screen.reserve(l);
 
-    if (mynum < (int)(N_user * confidence_level)){
+    if (myid < (int)(N_user * confidence_level)){
         confidence = true;
     }
     else{
@@ -15,24 +15,23 @@ UserAgent::UserAgent(int mynum)
 }
 
 //divide screen posts follow bounded confidence(ε)
-tuple<vector, vector> UserAgent:: divide_post(SNS &sns){
+tuple<vector<Message>, vector<Message>> UserAgent:: divide_post(SNS &sns){
     vector<int> &follows = sns.network[myid].follow;
     vector<Message> &msgdb = sns.msgdb;
-    int screen_index  = msg;= 0;
     vector<Message> similar_post;
     vector<Message> unsimilar_post;
 
-    for(auto msg = msgdb.end(); begin = msgdb.begin(); msg != begin; --msg){
+    for(auto msg = msgdb.end(); msg != msgdb.begin(); --msg){
         //followsの中にいる人が投稿していたらsimilarかunsimilarに追加
         //find関数は見つからなかった時、最後のポインタを返す
-        if(find(follows.begin(), follows.end(), msg.post_user) != follows.end()){
+        if(find(follows.begin(), follows.end(), msg->post_user) != follows.end()){
             //screen.emplace_back(msg);
-            if(abs(msg - msg.opinion) < EP){
+            if(abs(msg->opinion - EP)){
                 similar_post.emplace_back(msg);
             }
             else{
                 //メディアを信頼しているかつ元投稿者がメディアなら許容範囲外でもsimilar
-                if(confidence == true && msg.original_user >= N_user){
+                if(confidence == true && msg->original_user >= N_user){
                     similar_post.emplace_back(msg);
                 }
                 else{
@@ -80,7 +79,7 @@ void UserAgent::influence(vector<Message> &similar_post){
     o += (M * average_diffrence_opinion);
 }
 
-void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
+void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
     if(random_uniform(0.0, 1.0) < q){
         //投稿を一つランダムに選んで、その投稿者をアンフォローする
         int remove_user;
@@ -90,7 +89,7 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
         vector<int> follow_candidates;
         follow_candidates.reserve(l);
         //アンフォローするユーザを選択
-        remove_user = unsimilar_post[random_int(0, unsimilar_post.size() - 1)];
+        remove_user = unsimilar_post[random_int(0, unsimilar_post.size() - 1)].post_user;
         
 
         //新しくフォローするユーザ候補を作成
@@ -125,7 +124,7 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
              while(true){
                  follow_user = random_int(0, N);
                  //フォロー中にfollow_userがいなかったら抜ける
-                 if(find(follow.begin(), follow.end(), msg.post_user) == follow.end()){
+                 if(find(follow.begin(), follow.end(), follow_user) == follow.end()){
                      break;
                  }
              }
@@ -141,12 +140,12 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
     }
 }
 
-MediaAgent::MediaAgent(int myid)
+void MediaAgent::initialize(int myid)
 {
-    this->myid = myid;
-    this->opinion_range[0] = opinion_ranges[myid][0];
-    this->opinion_range[1] = opinion_ranges[myid][1];
-    this->o = random_uniform(opinion_range[0], opinion_range[1]);
+    myid = myid;
+    opinion_range[0] = opinion_ranges[myid][0];
+    opinion_range[1] = opinion_ranges[myid][1];
+    o = random_uniform(opinion_range[0], opinion_range[1]);
 }
 
 void MediaAgent::post(int time, SNS &sns){

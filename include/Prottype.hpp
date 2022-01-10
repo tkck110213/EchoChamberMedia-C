@@ -9,5 +9,5 @@ using namespace std;
 #include <numeric>
 void er_directed_network_generator(vector<node> &network, int vertex, int edge);
 
-void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent> &users, array<MediaAgent> &media)
+void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent, l> &users, array<MediaAgent, l> &media);
 #endif

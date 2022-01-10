@@ -24,8 +24,8 @@ void SNS::push(Message msg){
 
 //start_userからend_userの線を削除
 void SNS::remove_edge(int start_user, int end_user){
-  vector<int> &follow_StartUser = network[start_user];
-  vector<int> &follow_EndUser = network[end_user];
+  vector<int> &follow_StartUser = network[start_user].follow;
+  vector<int> &follow_EndUser = network[end_user].follow;
 
   for(auto itr = follow_StartUser.begin(); itr != follow_StartUser.end(); ++itr) {
       //*itr でイテレータの指す要素を参照
@@ -35,11 +35,11 @@ void SNS::remove_edge(int start_user, int end_user){
     }
   }
 
-  for(auto itr = follower_EndUser.begin(); itr != follower_EndUser.end(); ++itr) 
+  for(auto itr = follow_EndUser.begin(); itr != follow_EndUser.end(); ++itr) 
   {
       //*itr でイテレータの指す要素を参照
     if(*itr == start_user){
-      follower_EndUser.erase(itr);
+      follow_EndUser.erase(itr);
       break;
     }
   }
