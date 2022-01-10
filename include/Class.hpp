@@ -31,11 +31,14 @@ class UserAgent
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
         void refollow(SNS &sns, vector<Massage> &unsimilar_post);
-        float diversity = 0;
+        
     private:
         int myid;
+        vector<Message> screen;
+        float diversity = 0;
         float o = random_uniform(-1.0, 1.0);
         bool confidence;
+
 };
 
 //Media Agent classs
@@ -44,8 +47,7 @@ class MediaAgent
     public:
         //UserAgent(int myid);
         void initialize(int myid);
-        
-        //void post();
+        void post(int time, SNS &sns);
 
     private:
         int myid;
