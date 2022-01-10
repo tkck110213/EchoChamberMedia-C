@@ -23,24 +23,30 @@ void SNS::push(Message msg){
 }
 
 void SNS::remove_edge(int start, int end){
+  vector<int> &follow_StartUser = network[start];
+  vector<int> &follow_EndUser = network[end];
 
-  for(auto itr = network[start].follow.begin(); itr != network[start].follow.end(); ++itr) {
+  for(auto itr = follow_StartUser.begin(); itr != follow_StartUser.end(); ++itr) {
       //*itr でイテレータの指す要素を参照
     if(*itr == end){
-      network[start].follow.erase(itr);
+      follow_StartUser.erase(itr);
       break;
     }
   }
 
-  for(auto itr = network[end].follower.begin(); itr != network[end].follower.end(); ++itr) 
+  for(auto itr = follower_EndUser.begin(); itr != follower_EndUser.end(); ++itr) 
   {
       //*itr でイテレータの指す要素を参照
     if(*itr == start){
-      network[end].follower.erase(itr);
+      follower_EndUser.erase(itr);
       break;
     }
   }
-  
+}
+
+void SNS::add_edge(int start, int end){
+  network[start].follow.emplace_back(end);
+  network[end].follower.emplace_back(start);
 }
 
 
