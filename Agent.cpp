@@ -25,20 +25,20 @@ tuple<vector<Message>, vector<Message>> UserAgent:: divide_post(SNS &sns){
         //followsの中にいる人が投稿していたらsimilarかunsimilarに追加
         //find関数は見つからなかった時、最後のポインタを返す
         if(find(follows.begin(), follows.end(), msg->post_user) != follows.end()){
-            //screen.emplace_back(msg);
+            //screen.push_back(msg);
             if(abs(msg->opinion - EP)){
-                similar_post.emplace_back(msg);
+                similar_post.push_back(*msg);
             }
             else{
                 //メディアを信頼しているかつ元投稿者がメディアなら許容範囲外でもsimilar
                 if(confidence == true && msg->original_user >= N_user){
-                    similar_post.emplace_back(msg);
+                    similar_post.push_back(*msg);
                 }
                 else{
-                    unsimilar_post.emplace_back(msg);
+                    unsimilar_post.push_back(*msg);
                 }
             }
-            screen.emplace_back(msg);
+            screen.push_back(*msg);
             //スクリーンのサイズ追加されたら抜ける
             if(similar_post.size() + unsimilar_post.size() >= l && screen.size() >= l){
                 break;
@@ -69,7 +69,7 @@ void UserAgent::influence(vector<Message> &similar_post){
 
     //すべての意見差を求める
     for(int i = 0; i < similar_post.size(); i++){
-        diffrence_opinion.emplace_back(similar_post[i].opinion - o);
+        diffrence_opinion.push_back(similar_post[i].opinion - o);
     }
 
     //全意見差の平均を求める
@@ -98,7 +98,7 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
             for(char i = 0; i < screen_size; i++){
                 if(screen[i].post_type == "repost"){
                     if(find(follow.begin(), follow.end(), screen[i].original_user) != follow.end()){
-                        follow_candidates.emplace_back(screen[i].original_user);
+                        follow_candidates.push_back(screen[i].original_user);
                     }
                 }
             }
@@ -110,7 +110,7 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
 
             for(int i = msgdb_size - 1; i >= 0; ++i){
                 if(abs(msgdb[i].opinion - o) < EP){
-                    follow_candidates.emplace_back(msgdb[i].post_user);
+                    follow_candidates.push_back(msgdb[i].post_user);
                     if(follow_candidates.size() >= l){
                         break;
                     }
