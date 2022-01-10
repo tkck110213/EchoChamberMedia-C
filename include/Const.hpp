@@ -8,6 +8,7 @@ const int seed = 125456;
 const int N_media = 6;
 const int N = N_user + N_media;
 const float p = 0.5;
+const float q = 0.5;
 const int l = 10;
 const float EP = 0.4;
 const float M = 0.5;

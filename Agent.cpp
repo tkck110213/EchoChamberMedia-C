@@ -63,8 +63,22 @@ void UserAgent::influence(vector<Message> &similar_post){
     o += (M * average_diffrence_opinion);
 }
 
-void UserAgent::refollow(){
+void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
+    //投稿を一つランダムに選んで、その投稿者をアンフォローする
+    int remove = rand_int(0, unsimilar_post.size());
+    vector<int> &follow = sns.network[myid].follow;
     
+    if(random_uniform(0.0, 1.0) < q){
+        //アンフォロー
+        for(auto f = follow.begin(); f != follow.end(); ++f){
+            if(*f == unsimilar_post[remove].post_user){
+                follow.erase(f);
+                break;
+            }
+        }
+        
+        
+    }
 }
 
 void MediaAgent::initialize(int index)

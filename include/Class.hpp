@@ -30,7 +30,7 @@ class UserAgent
         tuple<vector, vector> divide_post(SNS &sns); 
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
-        //void refollow();
+        void refollow(SNS &sns, vector<Massage> &unsimilar_post);
         float diversity = 0;
     private:
         int myid;
