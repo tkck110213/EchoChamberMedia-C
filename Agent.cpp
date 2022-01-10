@@ -1,6 +1,6 @@
 #include "include/Prottype.hpp"
 //UserAgent::UserAgent(unsigned short int mynum)
-void UserAgent::initialize(int mynum)
+UserAgent::UserAgent(int mynum)
 {
     this->mynum = mynum;
     //ensure capacity of screen to size l 
@@ -91,12 +91,7 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
         follow_candidates.reserve(l);
         //アンフォローするユーザを選択
         remove_user = unsimilar_post[random_int(0, unsimilar_post.size() - 1)];
-        /*for(auto f = follow.begin(); f != follow.end(); ++f){
-            if(*f == unsimilar_post[remove].post_user){
-                follow.erase(f);
-                break;
-            }
-        }*/
+        
 
         //新しくフォローするユーザ候補を作成
         if(follow_method == "repost"){
@@ -123,6 +118,8 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
                 }
             }
         }
+
+        //フォローするユーザを選択
         //ランダムもしくはフォロー候補がいなかったとき
         if(follow_method == "random" || follow_candidates.empty() == true){
              while(true){
@@ -137,16 +134,18 @@ void UserAgent::refollow(SNS &sns, vector<Massage> &unsimilar_post){
             follow_user = follow_candidates[random_int(0, follow_candidates.size() - 1)];
         }
 
+        //選択したユーザをアンフォロー
         sns.remove_edge(myid, remove_user);
+        //選択したユーザをフォロー
         sns.add_edge(myid, follow_user);
     }
 }
 
-void MediaAgent::initialize(int index)
+MediaAgent::MediaAgent(int myid)
 {
-    this->myid = index + N_user;
-    this->opinion_range[0] = opinion_ranges[index][0];
-    this->opinion_range[1] = opinion_ranges[index][1];
+    this->myid = myid;
+    this->opinion_range[0] = opinion_ranges[myid][0];
+    this->opinion_range[1] = opinion_ranges[myid][1];
     this->o = random_uniform(opinion_range[0], opinion_range[1]);
 }
 

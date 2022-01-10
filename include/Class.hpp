@@ -25,8 +25,8 @@ class SNS{
 class UserAgent
 {
     public:
-        //UserAgent(int myid);
-        void initialize(int myid);
+        UserAgent(int myid);
+        //void initialize(int myid);
         tuple<vector, vector> divide_post(SNS &sns); 
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
@@ -45,8 +45,8 @@ class UserAgent
 class MediaAgent
 {
     public:
-        //UserAgent(int myid);
-        void initialize(int myid);
+        MediaAgent(int myid);
+        //void initialize(int myid);
         void post(int time, SNS &sns);
 
     private:

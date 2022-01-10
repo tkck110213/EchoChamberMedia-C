@@ -1,7 +1,7 @@
 #include <iostream>
 #include "include/Prottype.hpp"
 
-void EchoChamber_Dynamics(int time, SNS &sns, UserAgent &users, MediaAgent &media){
+void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent> &users, array<MediaAgent> &media){
     int user = random_int(0, N_user);
     int medium = random_int(0, N_media);
     vector<Message> similar_post;
@@ -19,9 +19,31 @@ void EchoChamber_Dynamics(int time, SNS &sns, UserAgent &users, MediaAgent &medi
 int main(void) {
     random_seed(seed);
     SNS sns(N, E);
-    UserAgent users[N_user];
-    MediaAgent media[N_media];
+    array<UserAgent, N_user> users = {};
+    array<MediaAgent, N_media> media = {}; 
+    
+    //人数分のユーザエージェントを作成
+    for(int i = 0; i < N_user; ++i){
+        users[i] = UserAgent(i);
+    }
+    //人数分のメディアエージェントを作成
+    for(int i = N_user; i < N; ++i){
+        media[i] = MediaAgent(i);
+    }
 
+    for(int time = 0; t < T; ++time){
+        int user = random_int(0, N_user - 1);
+        int medium = random_int(N_user, N - 1);
+        vector<Message> similar_post;
+        vector<Message> unsimilar_post;
+
+        tie(similar_post, unsimilar_post) = users[user].divide_post(sns);
+        users[user].influence(similar_post);
+        users[user].post(time, sns, similar_post);
+        users[user].refollow(sns, unsimilar_post);
+
+        media[medium].post(time, sns);
+    }
 
     return 0;
 }
