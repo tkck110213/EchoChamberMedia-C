@@ -27,16 +27,17 @@ class UserAgent
     public:
         //UserAgent(int myid);
         void initialize(int myid);
-        tuple<vector<Message>, vector<Message>> divide_post(SNS &sns); 
+        void divide_post(SNS &sns, vector<Message> &similar_post, vector<Message> &unsimilar_post); 
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
         void refollow(SNS &sns, vector<Message> &unsimilar_post);
-        
+        float o = random_uniform(-1.0, 1.0);
+        vector<Message> screen;
     private:
         int myid;
-        vector<Message> screen;
+        
         float diversity = 0;
-        float o = random_uniform(-1.0, 1.0);
+        
         bool confidence;
 
 };
