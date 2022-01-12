@@ -49,6 +49,7 @@ class MediaAgent
         //MediaAgent(int myid);
         void initialize(int myid);
         void post(int time, SNS &sns);
+        void change_opinion_range(float range0, float range1);
 
     private:
         int myid;

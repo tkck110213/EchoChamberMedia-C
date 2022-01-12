@@ -201,3 +201,9 @@ void MediaAgent::post(int time, SNS &sns){
         sns.push(msg);
     }   
 }
+
+//opinion rangeを引数で指定した範囲に変更
+void MediaAgent::change_opinion_range(float range0, float range1){
+    this->opinion_range[0] = range0;
+    this->opinion_range[1] = range1;
+}
