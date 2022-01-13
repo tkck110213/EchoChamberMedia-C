@@ -33,12 +33,13 @@ class UserAgent
         void refollow(SNS &sns, vector<Message> &unsimilar_post);
         float o = random_uniform(-1.0, 1.0);
         vector<Message> screen;
+        bool confidence;
     private:
         int myid;
         
         float diversity = 0;
         
-        bool confidence;
+        
 
 };
 
@@ -50,11 +51,12 @@ class MediaAgent
         void initialize(int myid);
         void post(int time, SNS &sns);
         void change_opinion_range(float range0, float range1);
-
-    private:
-        int myid;
         float o;
         float opinion_range[2];
+    private:
+        int myid;
+        
+        
 };
 
 

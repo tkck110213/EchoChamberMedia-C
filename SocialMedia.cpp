@@ -9,7 +9,7 @@ SNS::SNS(int N, int E){
 	//グラフのノード数を人数分にする(最初は一つのノードだけを宣言している)
 	network.resize(N);
 
-	//ノードに番号を付与する
+	//ノードに番号と色(意見)を付与する
 	for(int i = 0; i < N; i++){
 		network[i].node_id = i;
 	}

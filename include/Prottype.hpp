@@ -15,6 +15,6 @@ using namespace std;
 
 void er_directed_network_generator(vector<node> &network, int vertex, int edge);
 string get_date(void);
-void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent, l> &users, array<MediaAgent, l> &media);
-void export_graph(int time, SNS &sns, string ResultPath);
+//void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent, l> &users, array<MediaAgent, l> &media);
+void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> users, array<MediaAgent, N_media> media, string ResultPath);
 #endif

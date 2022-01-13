@@ -206,4 +206,8 @@ void MediaAgent::post(int time, SNS &sns){
 void MediaAgent::change_opinion_range(float range0, float range1){
     this->opinion_range[0] = range0;
     this->opinion_range[1] = range1;
+    o = random_uniform(opinion_range[0], opinion_range[1]);
+    //printf("range0 %f\n", opinion_range[0]);
+    //printf("range1 %f\n", opinion_range[1]);
+
 }
