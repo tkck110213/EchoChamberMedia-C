@@ -66,7 +66,6 @@ string get_date(void){
     s << setw(2) << setfill('0') << lt->tm_hour;
     s << setw(2) << setfill('0') << lt->tm_min;
     s << setw(2) << setfill('0') << lt->tm_sec;
-    //result = "2015-5-19" 
     return s.str();
 }
 
@@ -78,6 +77,7 @@ int main(void) {
     filesystem::create_directories(ResultPath);
     filesystem::create_directories(ResultPath + "graph/");
     filesystem::create_directories(ResultPath + "data/");
+    filesystem::create_directories(ResultPath + "gexf/");
 
     for(int n = 0; n < max_n; ++n){
         cout << "n " << n << endl;
@@ -105,28 +105,17 @@ int main(void) {
             vector<Message> similar_post;
             vector<Message> unsimilar_post;
             
-            //cout << "step " << time  << endl;
             users[user].divide_post(sns, similar_post, unsimilar_post);
-            
-            /*for(int i = 0; i < similar_post.size(); ++i){
-                cout << "|o-m| " << abs(similar_post[i].opinion- users[user].o) << endl; 
-                //cout << "m " << similar_post[i].opinion << endl; 
-            }*/
-            /*cout << "similar post size " << similar_post.size() << endl;
-            cout << "unsimilar post size " << unsimilar_post.size() << endl;
-            cout << "screen size " << users[user].screen.size() << endl;*/
-
             users[user].influence(similar_post);
-            
             users[user].post(time, sns, similar_post);
             users[user].refollow(sns, unsimilar_post);
             
-            if(T / 2 == time){
+            if(time == T/2){
                 for(int m = 0; m < N_media; ++m){
                     media[m].change_opinion_range(-0.1, 0.1);
                     //printf("range0 %f\n", media[m].opinion_range[0]);
                     //printf("range1 %f\n", media[m].opinion_range[1]);
-                    printf("opinion %f\n", media[m].o);
+                    //printf("opinion %f\n", media[m].o);
                 }
             }
 

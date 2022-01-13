@@ -27,9 +27,7 @@ void UserAgent:: divide_post(SNS &sns, vector<Message> &similar_post, vector<Mes
         //followsの中にいる人が投稿していたらsimilarかunsimilarに追加
         //find関数は見つからなかった時、最後のポインタを返す
         if(find(follows.begin(), follows.end(), msg->post_user) != follows.end()){
-            //screen.push_back(msg);
             if(abs(msg->opinion - o) < EP){//条件文の書き忘れ
-				//cout << abs(msg->opinion - o) << endl;
                 similar_post.push_back(*msg);
             }
             else{
@@ -41,7 +39,6 @@ void UserAgent:: divide_post(SNS &sns, vector<Message> &similar_post, vector<Mes
                     unsimilar_post.push_back(*msg);
                 }
             }
-            //cout << msg->opinion << endl;
             screen.push_back(*msg);
             
         }
@@ -59,13 +56,12 @@ void UserAgent::post(int time, SNS &sns, vector<Message> &similar_post){
     //printf("flag post\n");
     if(random_uniform(0.0, 1.0) <= p && similar_post.empty() != true){//repost
         int repost_msg = random_int(0, similar_post.size() - 1);
-		//cout << "repost msg" << repost_msg << endl;
+
          msg.post_type = "repost";
          msg.post_time = time;
          msg.post_user = myid;
          msg.original_user = similar_post[repost_msg].post_user;
          msg.opinion = similar_post[repost_msg].opinion;
-         //{"repost", time, myid, similar_post[repost_msg].post_user, similar_post[repost_msg].opinion};
     }
     else{//post
          msg.post_type = "post";
@@ -80,31 +76,20 @@ void UserAgent::post(int time, SNS &sns, vector<Message> &similar_post){
 
 void UserAgent::influence(vector<Message> &similar_post){
 	if(similar_post.empty() != true){
-        //printf("flag\n");
-        //cout << "similar size " << similar_post.size() << endl;
         vector<float> diffrence_opinion;
         float average_diffrence_opinion;
-        //cout << "my opinion " << o << endl;
 
         //すべての意見差を求める
         for(int i = 0; i < similar_post.size(); i++){
-            //cout << "similar opinion " << similar_post[i].opinion << endl;
             diffrence_opinion.push_back(similar_post[i].opinion - o);
         }
-        /*for(int i = 0; i < diffrence_opinion.size(); i++){
-            cout << "diffrence value" << i << " " << diffrence_opinion[i] << endl;
-        }*/
-		//cout << "diffrence_size " << diffrence_opinion.size() << endl;
+        
         //全意見差の平均を求める
         average_diffrence_opinion = accumulate(diffrence_opinion.begin(), diffrence_opinion.end(), 0.0) / diffrence_opinion.size();
-        //cout << "average " << average_diffrence_opinion << endl;
-        //影響を受ける
-        //cout << "before o" << o << endl;
-        o += (M * average_diffrence_opinion);
-        //cout << "after o" << o << endl << endl;
         
+        //影響を受ける
+        o += (M * average_diffrence_opinion);
     }
-    //printf("flag influence\n");
 }
 
 void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
@@ -149,15 +134,15 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
         //フォローするユーザを選択
         //ランダムもしくはフォロー候補がいなかったとき
         if(follow_method == "random" || follow_candidates.empty() == true){
-                while(true){
-                    //Nになっていた
-                    //Nも含んでしまうから1を引かないといけない
-                    follow_user = random_int(0, N - 1);
-                    //フォロー中にfollow_userがいないかつ、自分でなければ抜ける
-                    if(find(follow.begin(), follow.end(), follow_user) == follow.end() && follow_user != myid){
-                        break;
-                    }
+            while(true){
+                //Nになっていた
+                //Nも含んでしまうから1を引かないといけない
+                follow_user = random_int(0, N - 1);
+                //フォロー中にfollow_userがいないかつ、自分でなければ抜ける
+                if(find(follow.begin(), follow.end(), follow_user) == follow.end() && follow_user != myid){
+                    break;
                 }
+            }
         }
         else{//フォロー候補の中から1人選択
             follow_user = follow_candidates[random_int(0, follow_candidates.size() - 1)];
@@ -168,21 +153,6 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
         sns.remove_edge(myid, remove_user);
         //printf("follow user: %d\n", follow_user);
         sns.add_edge(myid, follow_user);
-        /*
-        printf("remove user: %d\n", remove_user);
-        sns.remove_edge(myid, remove_user);
-        for(int i = 0; i < sns.network[myid].follow.size(); ++i){
-            cout << sns.network[myid].follow[i] << ", ";
-        }
-        cout << endl;
-        //選択したユーザをフォロー
-        printf("follow user: %d\n", follow_user);
-        
-        for(int i = 0; i < sns.network[myid].follow.size(); ++i){
-            cout << sns.network[myid].follow[i] << ", ";
-        }
-        cout << endl;*/
-        //printf("flag refollow\n");
     }
 }
 
