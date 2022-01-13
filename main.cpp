@@ -116,7 +116,6 @@ int main(void) {
             cout << "unsimilar post size " << unsimilar_post.size() << endl;
             cout << "screen size " << users[user].screen.size() << endl;*/
 
-            //cout << "unsimilar post size " << unsimilar_post.size() << endl;
             users[user].influence(similar_post);
             
             users[user].post(time, sns, similar_post);
