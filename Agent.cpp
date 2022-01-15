@@ -156,12 +156,12 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
     }
 }
 
-void MediaAgent::initialize(int myid)
+void MediaAgent::initialize(int myid, const float *opinion_range)
 {
     this->myid = myid;
-    opinion_range[0] = opinion_ranges[myid - N_user][0];
-    opinion_range[1] = opinion_ranges[myid - N_user][1];
-    o = random_uniform(opinion_range[0], opinion_range[1]);
+    this->opinion_range[0] = opinion_range[0];
+    this->opinion_range[1] = opinion_range[1];
+    o = random_uniform(this->opinion_range[0], this->opinion_range[1]);
 }
 
 void MediaAgent::post(int time, SNS &sns){

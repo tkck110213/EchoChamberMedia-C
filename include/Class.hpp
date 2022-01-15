@@ -34,6 +34,8 @@ class UserAgent
         float o = random_uniform(-1.0, 1.0);
         vector<Message> screen;
         bool confidence;
+        
+
     private:
         int myid;
         
@@ -48,11 +50,12 @@ class MediaAgent
 {
     public:
         //MediaAgent(int myid);
-        void initialize(int myid);
+        void initialize(int myid, const float *opinion_range);
         void post(int time, SNS &sns);
         void change_opinion_range(float range0, float range1);
         float o;
         float opinion_range[2];
+        
     private:
         int myid;
         
