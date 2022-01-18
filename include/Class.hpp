@@ -31,6 +31,7 @@ class UserAgent
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
         void refollow(SNS &sns, vector<Message> &unsimilar_post);
+        void renew_screen(SNS &sns);
         float o = random_uniform(-1.0, 1.0);
         vector<Message> screen;
         float diversity = 0;

@@ -19,7 +19,7 @@ SNS::SNS(int N, int E){
 	//メディアをネットワークに追加
 	for(int medium = N_user; medium < N; ++medium){
 		int mf = 0;
-		while(mf < media_follower){
+		while(mf < MF){
 			int follower = random_int(0, N_user - 1);
 			if(find(network[follower].follow.begin(), network[follower].follow.end(), medium) == network[follower].follow.end()){
 				network[follower].follow.push_back(medium);

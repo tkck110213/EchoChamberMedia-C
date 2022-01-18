@@ -1,4 +1,4 @@
-#include <iostream>
+#include <set>
 #include "include/Prottype.hpp"
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
@@ -6,7 +6,7 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
     ResultGraphRelationPath << ResultPath << "graph/";
     ResultGraphRelationPath << follow_method << "_";
     ResultGraphRelationPath << "c" << confidence_level << "_";
-    ResultGraphRelationPath << "mf" << media_follower << "_";
+    ResultGraphRelationPath << "mf" << MF << "_";
     ResultGraphRelationPath << "n" << n << "_";
     ResultGraphRelationPath << time << "step";
     ResultGraphRelationPath << "_Relation" << ".csv";
@@ -15,7 +15,7 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
     ResultGraphMetaPath << ResultPath << "graph/";
     ResultGraphMetaPath << follow_method << "_";
     ResultGraphMetaPath << "c" << confidence_level << "_";
-    ResultGraphMetaPath << "mf" << media_follower << "_";
+    ResultGraphMetaPath << "mf" << MF << "_";
     ResultGraphMetaPath << "n" << n << "_";
     ResultGraphMetaPath << time << "step";
     ResultGraphMetaPath << "_Meta" << ".csv";
@@ -75,7 +75,7 @@ void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, strin
     ResultDataPath << ResultPath << "data/";
     ResultDataPath << follow_method << "_";
     ResultDataPath << "c" << confidence_level << "_";
-    ResultDataPath << "mf" << media_follower << "_";
+    ResultDataPath << "mf" << MF << "_";
     ResultDataPath << "n" << n << "_";
     ResultDataPath << FileName << ".csv";
 
@@ -93,23 +93,35 @@ void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, strin
 
 float shannon_entropy(vector<float> &data, int bins){
     vector<float> pk(bins);//各事象の発生確率
-    vector<int> hist(bins);
-    int interval = 2 / bins;
+    vector<int> hist(bins, 0);
+    float interval = 2.0 / float(bins); //intになってた
+    //cout << "interval " << interval << endl;
     float entropy = 0.0;
 
     //ヒストグラムを作成
     //個数が0だった時の対策で、個数に+1をする
+    //auto degree_if = [](float d, float range1, float range2)->bool{ return range1 <= d < range2; };
+    //cout << "hist" << endl;
     for(int i = 0; i < bins; ++i){
-        if(i + 1 != bins){
-            hist.at(i) = count_if(data.begin(), data.end(),[interval](int i)->bool{return(-1.0 + interval * i <= i < -1.0 + interval * (i+1));}) + 1;
+        float range1 = -1.0 + interval * i;
+        float range2 = -1.0 + interval * (i+1);
+        if(i < bins - 1){
+            //dがopinionを表すのにintになっていた
+            //条件文がpythonの書き方になっていた
+            hist.at(i) = count_if(data.begin(), data.end(),[range1, range2](float d)->bool{return(range1 <= d && d < range2);}) + 1;            
         }
         else{
+            //cout << range1 << "<= d <= " << range2 <<  endl;
             //最後は階級の不等号が変わる
-            hist.at(i) = count_if(data.begin(), data.end(),[interval](int i)->bool{return(-1.0 + interval * i <= i <= -1.0 + interval * (i+1));}) + 1;
+            hist.at(i) = count_if(data.begin(), data.end(),[range1, range2](float d)->bool{return(range1 <= d && d <= range2);}) + 1;
         }
+        
+        //cout << hist.at(i) << endl;
     }
+    //cout <<  endl << endl;
 
     int data_sum = accumulate(hist.begin(), hist.end(), 0);
+    //cout << data_sum << endl;
 
     //階級ごとの発生確率を計算
     for(int i = 0; i < bins; ++i){
@@ -156,6 +168,7 @@ int main(void) {
         //人数分のユーザエージェントを作成
         for(int i = 0; i < N_user; ++i){
             users[i].initialize(i);
+            users[i].diversity = calc_diversity(users[i].screen);
         }
         //人数分のメディアエージェントを作成
         for(int i = 0; i < N_media; ++i){
@@ -171,8 +184,8 @@ int main(void) {
             }
             for(int i = 0; i < N_user; ++i){
                 all_opinions[i][time] = users[i].o;
-            }
-            
+                all_diversity[i][time] = users[i].diversity;
+            }            
 
             int user = random_int(0, N_user - 1);
             int medium = random_int(0, N_media - 1);
@@ -192,6 +205,28 @@ int main(void) {
                 }
             }
             media[medium].post(time, sns);
+
+            //screenを更新するフォロワーを格納するsetを作成
+            set<int> renew_screen_user{};
+            vector<int> &follower = sns.network[user].follower;
+            vector<int> &media_follower = sns.network[medium + N_user].follower;
+            int follower_size = follower.size();
+            int media_follower_size = media_follower.size();
+
+            renew_screen_user.insert(user);
+            for(int i = 0; i < follower_size; ++i){
+                renew_screen_user.insert(follower[i]);
+            }
+            for(int i = 0; i < media_follower_size; ++i){
+                renew_screen_user.insert(media_follower[i]);
+            }
+            
+            //screenとエントロピーを更新
+            for(auto f : renew_screen_user) {
+                users[f].renew_screen(sns);                
+                users[f].diversity = calc_diversity(users[f].screen);
+                
+            }
         }
 
         export_graph(n, T, sns, users, media, ResultPath);

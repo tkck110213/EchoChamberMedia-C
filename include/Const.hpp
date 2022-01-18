@@ -18,6 +18,6 @@ const float M = 0.5;
 const int max_n = 10;
 const string follow_method = "random";
 const bool opinion_change = true;
-const int media_follower = 15;
+const int MF = 15;
 const float opinion_ranges[N_media][2] = {{-1.0, -0.8},{-0.1, 0.1},{0.8, 1.0},{-1.0, -0.8},{-0.1, 0.1},{0.8, 1.0}};
 #endif

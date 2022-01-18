@@ -16,37 +16,40 @@ void UserAgent::initialize(int myid)
 
 //divide screen posts follow bounded confidence(ε)
 void UserAgent:: divide_post(SNS &sns, vector<Message> &similar_post, vector<Message> &unsimilar_post){
-    
-    vector<int> &follows = sns.network[myid].follow;
-    vector<Message> &msgdb = sns.msgdb;
+    /*cout << "opinion " << o << endl;
+    cout << "screen" << endl;
+    for(int i = 0; i < screen.size(); ++i){
+        
+        cout << screen[i].opinion << " ";
+    }
+    cout << endl;*/
 
-    //screenに新しく追加するから、初期化する
-    screen.clear();
-
-    for(auto msg = msgdb.rbegin(); msg != msgdb.rend(); ++msg){//逆イテレータをちゃんと使おう
-        //followsの中にいる人が投稿していたらsimilarかunsimilarに追加
-        //find関数は見つからなかった時、最後のポインタを返す
-        if(find(follows.begin(), follows.end(), msg->post_user) != follows.end()){
-            if(abs(msg->opinion - o) < EP){//条件文の書き忘れ
+    for(auto msg = screen.begin(); msg != screen.end(); ++msg){//逆イテレータをちゃんと使おう
+        
+        if(abs(msg->opinion - o) < EP){//条件文の書き忘れ
+            similar_post.push_back(*msg);
+        }
+        else{
+            //メディアを信頼しているかつ元投稿者がメディアなら許容範囲外でもsimilar
+            if(confidence == true && msg->original_user >= N_user){
                 similar_post.push_back(*msg);
             }
             else{
-                //メディアを信頼しているかつ元投稿者がメディアなら許容範囲外でもsimilar
-                if(confidence == true && msg->original_user >= N_user){
-                    similar_post.push_back(*msg);
-                }
-                else{
-                    unsimilar_post.push_back(*msg);
-                }
+                unsimilar_post.push_back(*msg);
             }
-            screen.push_back(*msg);
-            
         }
-		//スクリーンのサイズ追加されたら抜ける
-		if(screen.size() >= l){
-			break;
-		}
     }
+    /*
+    cout << "similar" << endl;
+    for(int i = 0; i < similar_post.size(); ++i){
+        cout << similar_post[i].opinion << " ";
+    }
+    cout << endl;
+    cout << "unsimilar" << endl;
+    for(int i = 0; i < unsimilar_post.size(); ++i){
+        cout << unsimilar_post[i].opinion << " ";
+    }
+    cout << endl << endl;*/
     //printf("flag divede\n");
 }
 
@@ -153,6 +156,27 @@ void UserAgent::refollow(SNS &sns, vector<Message> &unsimilar_post){
         sns.remove_edge(myid, remove_user);
         //printf("follow user: %d\n", follow_user);
         sns.add_edge(myid, follow_user);
+    }
+}
+
+void UserAgent::renew_screen(SNS &sns){
+    vector<int> &follows = sns.network[myid].follow;
+    vector<Message> &msgdb = sns.msgdb;
+
+    //screenに新しく追加するから、初期化する
+    screen.clear();
+
+    for(auto msg = msgdb.rbegin(); msg != msgdb.rend(); ++msg){//逆イテレータをちゃんと使おう
+        //followsの中にいる人が投稿していたらsimilarかunsimilarに追加
+        //find関数は見つからなかった時、最後のポインタを返す
+        if(find(follows.begin(), follows.end(), msg->post_user) != follows.end()){
+            screen.push_back(*msg);
+            
+        }
+		//スクリーンのサイズ追加されたら抜ける
+		if(screen.size() >= l){
+			break;
+		}
     }
 }
 
