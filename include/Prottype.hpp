@@ -16,5 +16,8 @@ using namespace std;
 void er_directed_network_generator(vector<node> &network, int vertex, int edge);
 string get_date(void);
 //void EchoChamber_Dynamics(int time, SNS &sns, array<UserAgent, l> &users, array<MediaAgent, l> &media);
-void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> users, array<MediaAgent, N_media> media, string ResultPath);
+void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath);
+void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, string FileName);
+float shannon_entropy(vector<float> &data, int bins);
+float calc_diversity(vector<Message> &screen);
 #endif

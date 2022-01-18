@@ -33,11 +33,12 @@ class UserAgent
         void refollow(SNS &sns, vector<Message> &unsimilar_post);
         float o = random_uniform(-1.0, 1.0);
         vector<Message> screen;
+        float diversity = 0;
         bool confidence;
     private:
         int myid;
         
-        float diversity = 0;
+        
         
         
 

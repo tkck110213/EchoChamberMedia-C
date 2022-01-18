@@ -12,3 +12,8 @@ Agent.o: Agent.cpp include/prottype.hpp include/Class.hpp include/Random.hpp inc
 
 main.o: main.cpp include/prottype.hpp include/Class.hpp include/Random.hpp include/Struct.hpp include/Const.hpp
 	g++ -g -Og main.cpp -c -o main.o
+	
+.PHONY: clean distclean
+
+clean:
+	-rm *.o
