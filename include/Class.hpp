@@ -52,8 +52,6 @@ class MediaAgent
         float opinion_range[2];
     private:
         int myid;
-        
-        
 };
 
 

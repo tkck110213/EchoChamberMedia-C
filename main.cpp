@@ -1,4 +1,3 @@
-#include <set>
 #include "include/Prottype.hpp"
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
@@ -69,6 +68,45 @@ string get_date(void){
     return s.str();
 }
 
+void export_parameter(string ResultPath, string abstract){
+    string ParameterPath = ResultPath + "parameter.txt";
+    ofstream parameter(ParameterPath);
+
+    parameter << "# Experiment abstract" << endl;
+    parameter << abstract << endl << endl;
+
+    parameter << "# parameter" << endl;    
+    parameter << "max_n : " << max_n << endl;
+    parameter << "seeds : [";
+    for(int i = 0; i < max_n; ++i){
+        parameter << seeds[i] << ", ";
+    }
+    parameter << "]" << endl;
+
+    parameter << "confidence level : " << confidence_level << endl;
+    parameter << "media follower : " << MF << endl;
+    parameter << "opinion range : " << endl;
+    for(int i = 0; i < N_media; ++i){
+        parameter << "[" << opinion_ranges[i][0] << ", " << opinion_ranges[i][1] << "]" << endl;
+    }
+    parameter << "opinion_change : " << opinion_change << endl << endl;
+
+    parameter << "N : " << N << endl;
+    parameter << "N_user : " << N_user << endl;
+    parameter << "N_media : " << N_media << endl;
+    parameter << "E : " << E << endl;
+    parameter << "p : " << p << endl;
+    parameter << "q : " << q << endl;
+    //parameter << "p_media : " << p_media << endl;
+    parameter << "l : " << l << endl;
+    parameter << "T : " << T << endl;
+    parameter << "EP : " << EP << endl;
+    parameter << "M : " << M << endl;
+    
+    parameter << "follow_method : " << follow_method << endl;
+    
+}
+
 void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, string FileName){
     stringstream ResultDataPath;
 
@@ -100,8 +138,6 @@ float shannon_entropy(vector<float> &data, int bins){
 
     //ヒストグラムを作成
     //個数が0だった時の対策で、個数に+1をする
-    //auto degree_if = [](float d, float range1, float range2)->bool{ return range1 <= d < range2; };
-    //cout << "hist" << endl;
     for(int i = 0; i < bins; ++i){
         float range1 = -1.0 + interval * i;
         float range2 = -1.0 + interval * (i+1);
@@ -111,22 +147,17 @@ float shannon_entropy(vector<float> &data, int bins){
             hist.at(i) = count_if(data.begin(), data.end(),[range1, range2](float d)->bool{return(range1 <= d && d < range2);}) + 1;            
         }
         else{
-            //cout << range1 << "<= d <= " << range2 <<  endl;
             //最後は階級の不等号が変わる
             hist.at(i) = count_if(data.begin(), data.end(),[range1, range2](float d)->bool{return(range1 <= d && d <= range2);}) + 1;
         }
         
-        //cout << hist.at(i) << endl;
     }
-    //cout <<  endl << endl;
 
     int data_sum = accumulate(hist.begin(), hist.end(), 0);
-    //cout << data_sum << endl;
 
     //階級ごとの発生確率を計算
     for(int i = 0; i < bins; ++i){
         pk.at(i) = float(hist.at(i)) / float(data_sum);
-        //cout << pk.at(i) << endl;
     }
 
     for(int i = 0; i < bins; ++i){
@@ -148,8 +179,12 @@ float calc_diversity(vector<Message> &screen){
 }
 
 int main(void) {
-    random_seed(seed); 
     string ResultPath = "./result/" + get_date() + "/";
+    string abstract;
+
+    cout << "Input experiment abstract : ";
+    cin >> abstract;
+    cout << abstract << endl;
 
     //結果を格納するresultフォルダの作成
     filesystem::create_directories(ResultPath);
@@ -157,7 +192,13 @@ int main(void) {
     filesystem::create_directories(ResultPath + "data/");
     filesystem::create_directories(ResultPath + "graph/");
 
+    //各種パラメータの出力
+    //フォルダを作る前から出力しようとしていた
+    export_parameter(ResultPath, abstract);
+
     for(int n = 0; n < max_n; ++n){
+        //試行ごとにシード値を設定
+        random_seed(seeds[n]);
         cout << n + 1 << "/" << max_n << " Execute..." << endl;
         SNS sns(N, E);
         array<UserAgent, N_user> users;
