@@ -250,7 +250,7 @@ int main(void) {
         export_2d_data(n, all_opinions, ResultPath, "all_opinions");
         export_2d_data(n, all_diversity, ResultPath, "all_diversity");
 
-        cout << n + 1 << "/" << max_n << " Done!" << endl << endl;
+        cout << n + 1 << "/" << max_n << " Done!!" << endl << endl;
     }
     stringstream GraphConvertCommand;
     GraphConvertCommand << "python CovertGexf.py " << N << " " << ResultPath;
