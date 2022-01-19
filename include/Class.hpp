@@ -38,11 +38,6 @@ class UserAgent
         bool confidence;
     private:
         int myid;
-        
-        
-        
-        
-
 };
 
 //Media Agent classs

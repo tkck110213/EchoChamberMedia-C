@@ -3,7 +3,7 @@
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
     stringstream ResultGraphRelationPath;
-    ResultGraphRelationPath << ResultPath << "graph/";
+    ResultGraphRelationPath << ResultPath << "tmp/";
     ResultGraphRelationPath << follow_method << "_";
     ResultGraphRelationPath << "c" << confidence_level << "_";
     ResultGraphRelationPath << "mf" << MF << "_";
@@ -12,7 +12,7 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
     ResultGraphRelationPath << "_Relation" << ".csv";
 
     stringstream ResultGraphMetaPath;
-    ResultGraphMetaPath << ResultPath << "graph/";
+    ResultGraphMetaPath << ResultPath << "tmp/";
     ResultGraphMetaPath << follow_method << "_";
     ResultGraphMetaPath << "c" << confidence_level << "_";
     ResultGraphMetaPath << "mf" << MF << "_";
@@ -153,12 +153,12 @@ int main(void) {
 
     //結果を格納するresultフォルダの作成
     filesystem::create_directories(ResultPath);
-    filesystem::create_directories(ResultPath + "graph/");
+    filesystem::create_directories(ResultPath + "tmp/");
     filesystem::create_directories(ResultPath + "data/");
-    filesystem::create_directories(ResultPath + "gexf/");
+    filesystem::create_directories(ResultPath + "graph/");
 
     for(int n = 0; n < max_n; ++n){
-        cout << n + 1 << "/" << max_n << " Done" << endl;
+        cout << n + 1 << "/" << max_n << " Execute..." << endl;
         SNS sns(N, E);
         array<UserAgent, N_user> users;
         array<MediaAgent, N_media> media;
@@ -199,9 +199,27 @@ int main(void) {
             users[user].refollow(sns, unsimilar_post);
             
             //opinion rangeを変更する
-            if(opinion_change == true && time == T/2){
+            if(opinion_change == true && time % 2000 == 0){
+                float abs_min, abs_max, interval_range;
                 for(int m = 0; m < N_media; ++m){
-                    media[m].change_opinion_range(-0.1, 0.1);
+                    //意見の変化幅を決める
+                    if(abs(media[m].opinion_range[0]) < abs(media[m].opinion_range[1])){
+                        abs_max = media[m].opinion_range[1];
+                        abs_min = media[m].opinion_range[0];
+                    }
+                    else{
+                        abs_max = media[m].opinion_range[0];
+                        abs_min = media[m].opinion_range[1];
+                    }
+                    interval_range = abs_min - abs_max;
+                    
+                    /*cout << "before media " << m << " opinion" << endl;
+                    cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;*/
+                    //それぞれのmediaのopinion rangeを変化
+                    media[m].change_opinion_range(media[m].opinion_range[0] + interval_range, media[m].opinion_range[1] + interval_range);
+                    /*cout << "after media " << m << " opinion range" << endl;
+                    cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;
+                    cout << "media " << m << " opinion " << media[m].o << endl  << endl;*/
                 }
             }
             media[medium].post(time, sns);
@@ -225,14 +243,18 @@ int main(void) {
             for(auto f : renew_screen_user) {
                 users[f].renew_screen(sns);                
                 users[f].diversity = calc_diversity(users[f].screen);
-                
             }
         }
 
         export_graph(n, T, sns, users, media, ResultPath);
         export_2d_data(n, all_opinions, ResultPath, "all_opinions");
         export_2d_data(n, all_diversity, ResultPath, "all_diversity");
-    }
 
+        cout << n + 1 << "/" << max_n << " Done!" << endl << endl;
+    }
+    stringstream GraphConvertCommand;
+    GraphConvertCommand << "python CovertGexf.py " << N << " " << ResultPath;
+    cout << "Export Graph..." << endl;
+    system(GraphConvertCommand.str().c_str());
     return 0;
 }

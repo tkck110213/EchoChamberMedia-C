@@ -16,4 +16,4 @@ main.o: main.cpp include/prottype.hpp include/Class.hpp include/Random.hpp inclu
 .PHONY: clean distclean
 
 clean:
-	-rm *.o
+	rm *.o
