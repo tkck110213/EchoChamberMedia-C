@@ -4,6 +4,7 @@ import re
 import networkx as nx
 import csv
 import sys
+import numpy as np
 import glob
 import os
 import shutil
@@ -26,6 +27,23 @@ def change_suffix(file_name, from_suffix, to_suffix):
         # ファイル名を変更する
         shutil.move(file_name, to_name)
 
+def norm_opinion(o):
+	if o > 1.0:
+		return 1.0
+	elif o < -1.0:
+		return -1.0
+	else:
+		return o
+
+def norm_size(SizeList):
+	"""
+	入次数のリストを0から30の間に正規化する
+	"""
+	SizeList = np.array(SizeList)
+	Min = np.min(SizeList)
+	Max = np.max(SizeList)
+
+	return ((SizeList - Min) / (Max - Min)) * 30 
 
 def export_graph(N, c, ResultPath):
 	MetaFilesPath = glob.glob(ResultPath + "tmp/*Meta.csv")
@@ -36,7 +54,7 @@ def export_graph(N, c, ResultPath):
 		for i in range(10):
 			GraphSVGPath.append(path.format(c, i))
 
-	for MetaFilePath, RelationFilePath in tqdm(zip(MetaFilesPath, RelationFilesPath)):
+	for MetaFilePath, RelationFilePath in zip(MetaFilesPath, RelationFilesPath):
 		#print("{} {}".format(MetaFilePath, RelationFilePath))
 		with open(RelationFilePath) as f:
 			#GraphRelation = f.read().splitlines()
@@ -57,10 +75,13 @@ def export_graph(N, c, ResultPath):
 		#エッジの追加
 		Graph.add_edges_from(GraphRelation)
 
+		ColorList = [norm_opinion(GraphMeta[i][1]) for i in range(N)]
+		SizeList = norm_size([len(list(Graph.predecessors(i))) for i in range(N)])
+
 		for i in range(N):
-			Graph.nodes[i]["color"] = GraphMeta[i][1]
+			Graph.nodes[i]["color"] = ColorList[i]
 			Graph.nodes[i]["label"] = GraphMeta[i][2]
-			Graph.nodes[i]["size"] = len(list(Graph.predecessors(i))) * 1.7 + 45
+			Graph.nodes[i]["size"] = SizeList[i]
 		
 
 		FileName = os.path.splitext(os.path.basename(MetaFilePath))[0].strip("_Meta.csv")
@@ -72,10 +93,10 @@ def export_graph(N, c, ResultPath):
 		#cytoscapeでSVG出力
 		if FileName in GraphSVGPath:
 			p4c.networks.create_network_from_networkx(Graph)
-			p4c.styles.set_visual_style("myStyle3")
+			p4c.styles.set_visual_style("GraphStyle1")
 			p4c.layouts.set_layout_properties("force-directed", {'defaultSpringCoefficient':0.00001})
 			p4c.layouts.layout_network("force-directed")
-			#p4c.network_views.fit_content()
+			p4c.network_views.fit_content()
 			p4c.network_views.export_image(FileTmpPath, type="svg")
 			#p4c.commands.command_sleep(1)
 			p4c.networks.delete_network()
