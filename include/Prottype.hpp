@@ -23,5 +23,6 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
 void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, string FileName);
 void export_parameter(string ResultPath, string abstract);
 float shannon_entropy(vector<float> &data, int bins);
+void export_log(int n, int t, string ResultPath, array<MediaAgent, N_media> &media);
 float calc_diversity(vector<Message> &screen);
 #endif

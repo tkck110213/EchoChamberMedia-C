@@ -1,4 +1,6 @@
 #include "include/Prottype.hpp"
+int seeds[max_n];
+int origin_seed;
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
     stringstream ResultGraphRelationPath;
@@ -32,7 +34,8 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
         }
 
         //メタデータ(意見など)を付与
-        if(i < N_user){
+        //Agentid, opinion, label(cofidence) 
+        if(i < N_user){//一般エージェント
             Meta << i << ","<< users[i].o << ",";
             if(users[i].confidence == true){
                 Meta << "c" << endl;
@@ -41,8 +44,8 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
                 Meta << "" << endl;
             }
         }
-        else{
-            Meta << i << ","<< media[i - N_user].o << "," << "media" << endl;
+        else{//メディア
+            Meta << i << ","<< (media[i-N_user].opinion_range[0] + media[i-N_user].opinion_range[1]) / 2.0 << "," << "media" << endl;
         }
     }
 }
@@ -75,8 +78,9 @@ void export_parameter(string ResultPath, string abstract){
     parameter << "# Experiment abstract" << endl;
     parameter << abstract << endl << endl;
 
-    parameter << "# parameter" << endl;    
+    parameter << "# parameter " << endl;    
     parameter << "max_n : " << max_n << endl;
+    parameter << "origin seed : " << origin_seed << endl;
     parameter << "seeds : [";
     for(int i = 0; i < max_n; ++i){
         parameter << seeds[i] << ", ";
@@ -105,6 +109,18 @@ void export_parameter(string ResultPath, string abstract){
     
     parameter << "follow_method : " << follow_method << endl;
     
+}
+
+void export_log(int n, int t, string ResultPath, array<MediaAgent, N_media> &media){
+    string LogPath = ResultPath + "log.txt";
+    ofstream Log(LogPath, ios_base::app);
+
+    Log << "n=" << n << " " << t << "step" << endl;
+    for(int m = 0; m < N_media; ++m){
+        Log << "    media " << m << " change opinion range" << endl;
+        Log << "    " << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;
+        Log << "    media " << m << " opinion " << media[m].o << endl  << endl;
+    }
 }
 
 void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, string FileName){
@@ -179,18 +195,26 @@ float calc_diversity(vector<Message> &screen){
 }
 
 int main(void) {
+    random_seed(origin_seed);
     string ResultPath = "./result/" + get_date() + "/";
     string abstract;
 
     cout << "Input experiment abstract : ";
     cin >> abstract;
-    cout << abstract << endl;
+    cout << "Input origin seed (int) : ";
+    cin >> origin_seed;
+    //cout << abstract << endl;
 
     //結果を格納するresultフォルダの作成
     filesystem::create_directories(ResultPath);
     filesystem::create_directories(ResultPath + "tmp/");
     filesystem::create_directories(ResultPath + "data/");
     filesystem::create_directories(ResultPath + "graph/");
+
+    //各試行のシード値作成
+    for(int i = 0; i < max_n; ++i){
+        seeds[i] = random_int(10, 100000);
+    }
 
     //各種パラメータの出力
     //フォルダを作る前から出力しようとしていた
@@ -220,7 +244,7 @@ int main(void) {
         for(int time = 0; time < T; ++time){
             
             //グラフの出力と現時点での意見を保存
-            if(time % 2000 == 0){
+            if(time % 1000 == 0){
                 export_graph(n, time, sns, users, media, ResultPath);
             }
             for(int i = 0; i < N_user; ++i){
@@ -240,7 +264,7 @@ int main(void) {
             users[user].refollow(sns, unsimilar_post);
             
             //opinion rangeを変更する
-            if(opinion_change == true && time % 2000 == 0){
+            if(opinion_change == true && time % 1000 == 0 && time <= 10000){
                 float abs_min, abs_max, interval_range;
                 for(int m = 0; m < N_media; ++m){
                     //意見の変化幅を決める
@@ -252,7 +276,7 @@ int main(void) {
                         abs_max = media[m].opinion_range[0];
                         abs_min = media[m].opinion_range[1];
                     }
-                    interval_range = abs_min - abs_max;
+                    interval_range = (abs_min - abs_max) / 2.0;
                     
                     /*cout << "before media " << m << " opinion" << endl;
                     cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;*/
@@ -262,6 +286,7 @@ int main(void) {
                     cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;
                     cout << "media " << m << " opinion " << media[m].o << endl  << endl;*/
                 }
+                export_log(n, time, ResultPath, media);
             }
             media[medium].post(time, sns);
 
@@ -294,7 +319,7 @@ int main(void) {
         cout << n + 1 << "/" << max_n << " Done!!" << endl << endl;
     }
     stringstream GraphConvertCommand;
-    GraphConvertCommand << "python CovertGexf.py " << N << " " << ResultPath;
+    GraphConvertCommand << "python ExportGraphSVG.py " << N << " " << confidence_level << " " << ResultPath;
     cout << "Export Graph..." << endl;
     system(GraphConvertCommand.str().c_str());
     return 0;
