@@ -9,8 +9,6 @@ import glob
 import os
 import shutil
 import py4cytoscape as p4c
-from tqdm import tqdm
-
 
 def change_suffix(file_name, from_suffix, to_suffix):
     # ファイルの拡張子を得る
@@ -48,11 +46,9 @@ def norm_size(SizeList):
 def export_graph(N, c, mf, ResultPath):
 	MetaFilesPath = glob.glob(ResultPath + "tmp/*Meta.csv")
 	RelationFilesPath = glob.glob(ResultPath + "tmp/*Relation.csv")
-	GraphSVGPath = []
 	
-	for path in ["random_c{}_mf{}_n{}_0step", "random_c{}_mf{}_n{}_5000step", "random_c{}_mf{}_n{}_10000step", "random_c{}_mf{}_n{}_12000step", "random_c{}_mf{}_n{}_14000step", "random_c{}_mf{}_n{}_16000step", "random_c{}_mf{}_n{}_18000step", "random_c{}_mf{}_n{}_20000step"]:
-		for i in range(10):
-			GraphSVGPath.append(path.format(c, mf, i))
+	#グラフを保存するステップ数を決定
+	GraphSVGFileStep = [0, 10000, 11000]
 
 	for MetaFilePath, RelationFilePath in zip(MetaFilesPath, RelationFilesPath):
 		#print("{} {}".format(MetaFilePath, RelationFilePath))
@@ -91,12 +87,14 @@ def export_graph(N, c, mf, ResultPath):
 		nx.write_graphml(Graph, FilePath + ".graphml")
 
 		#cytoscapeでSVG出力
-		if FileName in GraphSVGPath:
+		if int(re.findall(r"\d+", FileName)[-1]) in GraphSVGFileStep:
+			print("Export : {}.svg".format(FileName))
 			p4c.networks.create_network_from_networkx(Graph)
 			p4c.styles.set_visual_style("GraphStyle1")
 			p4c.layouts.set_layout_properties("force-directed", {'defaultSpringCoefficient':0.00001})
 			p4c.layouts.layout_network("force-directed")
 			p4c.network_views.fit_content()
+			p4c.session.save_session(FilePath)
 			p4c.network_views.export_image(FileTmpPath, type="svg")
 			#p4c.commands.command_sleep(1)
 			p4c.networks.delete_network()
@@ -109,6 +107,7 @@ def export_graph(N, c, mf, ResultPath):
 				f.write(re.sub("<desc>.*</desc>\n", "", a))
 
 			os.remove(FileTmpPath+".txt")
+		
 		
 
 
