@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     //パラメータが書かれたjsonファイルを引数に取る
-    ifstream ifs("./parameter.json");
+    ifstream ifs(argv[1]);
     json parameter;
     ifs >> parameter;
 
