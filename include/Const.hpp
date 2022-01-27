@@ -2,7 +2,7 @@
 #define CONST_HPP
 #include <string>
 using namespace std;
-const int max_n = 1;
+const int max_n = 10;
 const int N_user = 100;
 const int E = 400;
 //const int origin_seed = 4155;

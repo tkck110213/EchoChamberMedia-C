@@ -321,12 +321,11 @@ int main(int argc, char *argv[]) {
                             }
                             interval_range = (abs_min - abs_max) / 2.0;
                             
-                            //それぞれのmediaのopinion rangeを変化
                             media[m].set_opinion_range(media[m].opinion_range[0] + interval_range, media[m].opinion_range[1] + interval_range);
+                        }
                         
                         export_log(n, time, ResultPath, media);
                     }
-                    
                     media[medium].post(time, sns);
 
                     //screenを更新するフォロワーを格納するsetを作成
