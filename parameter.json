@@ -1,0 +1,8 @@
+{
+	"origin_seed":1234665,
+	"confidence_level":[0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+	"media_follower":[10, 15],
+	"opinion_range":[[-1.0, -0.8],[-1.0, -0.8],[-1.0, -0.8], [0.8, 1.0], [0.8, 1.0] ,[0.8, 1.0]],
+	"opinion_change":true,
+	"abstract":"パラメータjson test"
+}

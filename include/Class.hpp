@@ -14,7 +14,7 @@ class SNS{
         vector<node> network;
         int N;
         int E;
-        SNS(int N, int E);
+        SNS(int N, int E, int MF);
         vector<int> get_follow(int user_id);
         void push(Message msg);
         void remove_edge(int start, int end);
@@ -26,7 +26,7 @@ class UserAgent
 {
     public:
         //UserAgent(int myid);
-        void initialize(int myid);
+        void initialize(int myid, float confidence_level);
         void divide_post(SNS &sns, vector<Message> &similar_post, vector<Message> &unsimilar_post); 
         void influence(vector<Message> &similar_post);
         void post(int time, SNS &sns, vector<Message> &similar_post);
@@ -45,9 +45,9 @@ class MediaAgent
 {
     public:
         //MediaAgent(int myid);
-        void initialize(int myid);
+        void add_id(int myid);
         void post(int time, SNS &sns);
-        void change_opinion_range(float range0, float range1);
+        void set_opinion_range(float range0, float range1);
         float o;
         float opinion_range[2];
     private:

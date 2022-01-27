@@ -1,12 +1,20 @@
 #include "include/Prottype.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
 int seeds[max_n];
 int origin_seed;
+int MF;
+float confidence_level;
+float opinion_ranges[N_media][2];
+bool opinion_change;
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
     stringstream ResultGraphRelationPath;
     ResultGraphRelationPath << ResultPath << "tmp/";
     ResultGraphRelationPath << follow_method << "_";
-    ResultGraphRelationPath << "c" << confidence_level << "_";
+    ResultGraphRelationPath << fixed << setprecision(1) << "c" << confidence_level << "_";
     ResultGraphRelationPath << "mf" << MF << "_";
     ResultGraphRelationPath << "n" << n << "_";
     ResultGraphRelationPath << time << "step";
@@ -15,7 +23,7 @@ void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, ar
     stringstream ResultGraphMetaPath;
     ResultGraphMetaPath << ResultPath << "tmp/";
     ResultGraphMetaPath << follow_method << "_";
-    ResultGraphMetaPath << "c" << confidence_level << "_";
+    ResultGraphMetaPath << fixed << setprecision(1) << "c" << confidence_level << "_";
     ResultGraphMetaPath << "mf" << MF << "_";
     ResultGraphMetaPath << "n" << n << "_";
     ResultGraphMetaPath << time << "step";
@@ -75,7 +83,7 @@ void export_parameter(string ResultPath, string abstract){
     string ParameterPath = ResultPath + "parameter.txt";
     ofstream parameter(ParameterPath);
 
-    parameter << "# Experiment abstract" << endl;
+    parameter << setprecision(2) << "# Experiment abstract" << endl;
     parameter << abstract << endl << endl;
 
     parameter << "# parameter " << endl;    
@@ -100,6 +108,7 @@ void export_parameter(string ResultPath, string abstract){
     parameter << "N_media : " << N_media << endl;
     parameter << "E : " << E << endl;
     parameter << "p : " << p << endl;
+    parameter << "p_media : " << p_media << endl;
     parameter << "q : " << q << endl;
     //parameter << "p_media : " << p_media << endl;
     parameter << "l : " << l << endl;
@@ -126,7 +135,7 @@ void export_log(int n, int t, string ResultPath, array<MediaAgent, N_media> &med
 void export_2d_data(int n, vector<vector<float>> &data, string ResultPath, string FileName){
     stringstream ResultDataPath;
 
-    ResultDataPath << ResultPath << "data/";
+    ResultDataPath << fixed << setprecision(1) << ResultPath << "data/";
     ResultDataPath << follow_method << "_";
     ResultDataPath << "c" << confidence_level << "_";
     ResultDataPath << "mf" << MF << "_";
@@ -194,133 +203,168 @@ float calc_diversity(vector<Message> &screen){
     return shannon_entropy(screen_opinions, 10);
 }
 
-int main(void) {
+string get_resultpath(string date){
+    stringstream ResultPath;
+    ResultPath  << "./result/" << date << "/c" << fixed << setprecision(1) << confidence_level << "mf" << MF << "/";
+
+    return ResultPath.str();
+}
+
+int main(int argc, char *argv[]) {
+    
+    if (argc != 2) {
+        cerr << "No program parameters provided !" << endl;
+        exit(EXIT_FAILURE);
+    }
+    //パラメータが書かれたjsonファイルを引数に取る
+    ifstream ifs("./parameter.json");
+    json parameter;
+    ifs >> parameter;
+
+    origin_seed = parameter["origin_seed"];
+
+    string abstract = parameter["abstract"];
+    string date = get_date();
+
+    //opinion rangeをグローバル変数に代入
+    if(parameter["opinion_range"].size() != N_media){
+        cerr << "Need same size opinion range and media" << endl;
+        exit(EXIT_FAILURE);
+    }
+    for(int i = 0; i < N_media; ++i){
+        opinion_ranges[i][0] = parameter["opinion_range"][i][0];
+        opinion_ranges[i][1] = parameter["opinion_range"][i][1];
+    }
+    opinion_change = parameter["opinion_change"];
+
     random_seed(origin_seed);
-    string ResultPath = "./result/" + get_date() + "/";
-    string abstract;
-
-    cout << "Input experiment abstract : ";
-    cin >> abstract;
-    cout << "Input origin seed (int) : ";
-    cin >> origin_seed;
-    //cout << abstract << endl;
-
-    //結果を格納するresultフォルダの作成
-    filesystem::create_directories(ResultPath);
-    filesystem::create_directories(ResultPath + "tmp/");
-    filesystem::create_directories(ResultPath + "data/");
-    filesystem::create_directories(ResultPath + "graph/");
-
-    //各試行のシード値作成
-    for(int i = 0; i < max_n; ++i){
-        seeds[i] = random_int(10, 100000);
-    }
-
-    //各種パラメータの出力
-    //フォルダを作る前から出力しようとしていた
-    export_parameter(ResultPath, abstract);
-
-    for(int n = 0; n < max_n; ++n){
-        //試行ごとにシード値を設定
-        random_seed(seeds[n]);
-        cout << n + 1 << "/" << max_n << " Execute..." << endl;
-        SNS sns(N, E);
-        array<UserAgent, N_user> users;
-        array<MediaAgent, N_media> media;
-        vector<vector<float>> all_opinions(N_user, vector<float>(T));
-        vector<vector<float>> all_diversity(N_user, vector<float>(T));
-        
-        //人数分のユーザエージェントを作成
-        for(int i = 0; i < N_user; ++i){
-            users[i].initialize(i);
-            users[i].diversity = calc_diversity(users[i].screen);
-        }
-        //人数分のメディアエージェントを作成
-        for(int i = 0; i < N_media; ++i){
-            media[i].initialize(i + N_user);
-        }
-        
-        //シミュレーション開始
-        for(int time = 0; time < T; ++time){
+    
+    for (const float &c : parameter["confidence_level"]){
+        for (const float &mf : parameter["media_follower"]){
+            confidence_level = c;
+            MF = mf;
             
-            //グラフの出力と現時点での意見を保存
-            if(time % 1000 == 0){
-                export_graph(n, time, sns, users, media, ResultPath);
+            string ResultPath = get_resultpath(date);
+
+            //結果を格納するresultフォルダの作成
+            filesystem::create_directories(ResultPath);
+            filesystem::create_directories(ResultPath + "tmp/");
+            filesystem::create_directories(ResultPath + "data/");
+            filesystem::create_directories(ResultPath + "graph/");
+
+            //各試行のシード値作成
+            for(int i = 0; i < max_n; ++i){
+                seeds[i] = random_int(10, 100000);
             }
-            for(int i = 0; i < N_user; ++i){
-                all_opinions[i][time] = users[i].o;
-                all_diversity[i][time] = users[i].diversity;
-            }            
 
-            int user = random_int(0, N_user - 1);
-            int medium = random_int(0, N_media - 1);
-            vector<Message> similar_post;
-            vector<Message> unsimilar_post;
-            
-            //ランダムに選んだユーザが行動する
-            users[user].divide_post(sns, similar_post, unsimilar_post);
-            users[user].influence(similar_post);
-            users[user].post(time, sns, similar_post);
-            users[user].refollow(sns, unsimilar_post);
-            
-            //opinion rangeを変更する
-            if(opinion_change == true && time % 1000 == 0 && time <= 10000){
-                float abs_min, abs_max, interval_range;
-                for(int m = 0; m < N_media; ++m){
-                    //意見の変化幅を決める
-                    if(abs(media[m].opinion_range[0]) < abs(media[m].opinion_range[1])){
-                        abs_max = media[m].opinion_range[1];
-                        abs_min = media[m].opinion_range[0];
-                    }
-                    else{
-                        abs_max = media[m].opinion_range[0];
-                        abs_min = media[m].opinion_range[1];
-                    }
-                    interval_range = (abs_min - abs_max) / 2.0;
-                    
-                    /*cout << "before media " << m << " opinion" << endl;
-                    cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;*/
-                    //それぞれのmediaのopinion rangeを変化
-                    media[m].change_opinion_range(media[m].opinion_range[0] + interval_range, media[m].opinion_range[1] + interval_range);
-                    /*cout << "after media " << m << " opinion range" << endl;
-                    cout << media[m].opinion_range[0] << " " << media[m].opinion_range[1] << endl;
-                    cout << "media " << m << " opinion " << media[m].o << endl  << endl;*/
+            //各種パラメータの出力
+            //フォルダを作る前から出力しようとしていた
+            export_parameter(ResultPath, abstract);
+
+            for(int n = 0; n < max_n; ++n){
+                //試行ごとにシード値を設定
+                random_seed(seeds[n]);
+                cout << "c" << fixed << setprecision(1) << confidence_level << " mf" << MF << endl;
+                cout << n + 1 << "/" << max_n << " Execute..." << endl;
+                SNS sns(N, E, MF);
+                array<UserAgent, N_user> users;
+                array<MediaAgent, N_media> media;
+                vector<vector<float>> all_opinions(N_user, vector<float>(T));
+                vector<vector<float>> all_diversity(N_user, vector<float>(T));
+                
+                //人数分のユーザエージェントを作成
+                for(int i = 0; i < N_user; ++i){
+                    users[i].initialize(i, confidence_level);
+                    users[i].diversity = calc_diversity(users[i].screen);
                 }
-                export_log(n, time, ResultPath, media);
-            }
-            media[medium].post(time, sns);
+                //人数分のメディアエージェントを作成
+                for(int i = 0; i < N_media; ++i){
+                    media[i].add_id(i + N_user);
+                    media[i].set_opinion_range(opinion_ranges[i][0], opinion_ranges[i][1]);
+                }
+                
+                //シミュレーション開始
+                for(int time = 0; time < T; ++time){
+                    
+                    //グラフの出力と現時点での意見を保存
+                    if(time % 1000 == 0){
+                        export_graph(n, time, sns, users, media, ResultPath);
+                    }
+                    for(int i = 0; i < N_user; ++i){
+                        all_opinions[i][time] = users[i].o;
+                        all_diversity[i][time] = users[i].diversity;
+                    }            
 
-            //screenを更新するフォロワーを格納するsetを作成
-            set<int> renew_screen_user{};
-            vector<int> &follower = sns.network[user].follower;
-            vector<int> &media_follower = sns.network[medium + N_user].follower;
-            int follower_size = follower.size();
-            int media_follower_size = media_follower.size();
+                    int user = random_int(0, N_user - 1);
+                    int medium = random_int(0, N_media - 1);
+                    vector<Message> similar_post;
+                    vector<Message> unsimilar_post;
+                    
+                    //ランダムに選んだユーザが行動する
+                    users[user].divide_post(sns, similar_post, unsimilar_post);
+                    users[user].influence(similar_post);
+                    users[user].post(time, sns, similar_post);
+                    users[user].refollow(sns, unsimilar_post);
+                    
+                    //opinion rangeを変更する
+                    if(opinion_change == true && time % 1000 == 0 && time <= 10000){
+                        float abs_min, abs_max, interval_range;
+                        for(int m = 0; m < N_media; ++m){
+                            //意見の変化幅を決める
+                            if(abs(media[m].opinion_range[0]) < abs(media[m].opinion_range[1])){
+                                abs_max = media[m].opinion_range[1];
+                                abs_min = media[m].opinion_range[0];
+                            }
+                            else{
+                                abs_max = media[m].opinion_range[0];
+                                abs_min = media[m].opinion_range[1];
+                            }
+                            interval_range = (abs_min - abs_max) / 2.0;
+                            
+                            //それぞれのmediaのopinion rangeを変化
+                            media[m].set_opinion_range(media[m].opinion_range[0] + interval_range, media[m].opinion_range[1] + interval_range);
+                        
+                        export_log(n, time, ResultPath, media);
+                    }
+                    
+                    media[medium].post(time, sns);
 
-            renew_screen_user.insert(user);
-            for(int i = 0; i < follower_size; ++i){
-                renew_screen_user.insert(follower[i]);
+                    //screenを更新するフォロワーを格納するsetを作成
+                    set<int> renew_screen_user{};
+                    vector<int> &follower = sns.network[user].follower;
+                    vector<int> &media_follower = sns.network[medium + N_user].follower;
+                    int follower_size = follower.size();
+                    int media_follower_size = media_follower.size();
+
+                    renew_screen_user.insert(user);
+                    for(int i = 0; i < follower_size; ++i){
+                        renew_screen_user.insert(follower[i]);
+                    }
+                    for(int i = 0; i < media_follower_size; ++i){
+                        renew_screen_user.insert(media_follower[i]);
+                    }
+                    
+                    //screenとエントロピーを更新
+                    for(auto f : renew_screen_user) {
+                        users[f].renew_screen(sns);                
+                        users[f].diversity = calc_diversity(users[f].screen);
+                    }
+                }
+
+                export_graph(n, T, sns, users, media, ResultPath);
+                export_2d_data(n, all_opinions, ResultPath, "all_opinions");
+                export_2d_data(n, all_diversity, ResultPath, "all_diversity");
+
+                cout << n + 1 << "/" << max_n << " Done!!" << endl << endl;
             }
-            for(int i = 0; i < media_follower_size; ++i){
-                renew_screen_user.insert(media_follower[i]);
-            }
+            stringstream GraphConvertCommand;
+            string GraphConvertCommandPath = "./" + date + "-ExportGraphSVG.bat";
+            ofstream CommandBat(GraphConvertCommandPath, ios_base::app);
+            GraphConvertCommand << "python ExportGraphSVG.py " << N << " " << fixed << setprecision(1) << confidence_level << " " << MF << " " << ResultPath << endl;
             
-            //screenとエントロピーを更新
-            for(auto f : renew_screen_user) {
-                users[f].renew_screen(sns);                
-                users[f].diversity = calc_diversity(users[f].screen);
-            }
+            CommandBat << GraphConvertCommand.str();
+
         }
-
-        export_graph(n, T, sns, users, media, ResultPath);
-        export_2d_data(n, all_opinions, ResultPath, "all_opinions");
-        export_2d_data(n, all_diversity, ResultPath, "all_diversity");
-
-        cout << n + 1 << "/" << max_n << " Done!!" << endl << endl;
     }
-    stringstream GraphConvertCommand;
-    GraphConvertCommand << "python ExportGraphSVG.py " << N << " " << confidence_level << " " << ResultPath;
-    cout << "Export Graph..." << endl;
-    system(GraphConvertCommand.str().c_str());
     return 0;
 }

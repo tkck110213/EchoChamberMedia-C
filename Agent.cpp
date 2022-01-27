@@ -1,6 +1,6 @@
 #include "include/Prottype.hpp"
 //UserAgent::UserAgent(unsigned short int myid)
-void UserAgent::initialize(int myid)
+void UserAgent::initialize(int myid, float confidence_level)
 {
     this->myid = myid;//thisをつけ忘れてた
     //ensure capacity of screen to size l 
@@ -180,12 +180,9 @@ void UserAgent::renew_screen(SNS &sns){
     }
 }
 
-void MediaAgent::initialize(int myid)
+void MediaAgent::add_id(int myid)
 {
     this->myid = myid;
-    opinion_range[0] = opinion_ranges[myid - N_user][0];
-    opinion_range[1] = opinion_ranges[myid - N_user][1];
-    o = random_uniform(opinion_range[0], opinion_range[1]);
 }
 
 void MediaAgent::post(int time, SNS &sns){
@@ -197,7 +194,7 @@ void MediaAgent::post(int time, SNS &sns){
 }
 
 //opinion rangeを引数で指定した範囲に変更
-void MediaAgent::change_opinion_range(float range0, float range1){
+void MediaAgent::set_opinion_range(float range0, float range1){
     this->opinion_range[0] = range0;
     this->opinion_range[1] = range1;
     o = random_uniform(opinion_range[0], opinion_range[1]);

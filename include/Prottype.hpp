@@ -25,4 +25,5 @@ void export_parameter(string ResultPath, string abstract);
 float shannon_entropy(vector<float> &data, int bins);
 void export_log(int n, int t, string ResultPath, array<MediaAgent, N_media> &media);
 float calc_diversity(vector<Message> &screen);
+string get_resultpath(string date);
 #endif

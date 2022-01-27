@@ -2,7 +2,7 @@
 
 
 //SNSクラスのコンストラクタ
-SNS::SNS(int N, int E){
+SNS::SNS(int N, int E, int MF){
 	this->N = N;
 	this->E = E;
 

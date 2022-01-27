@@ -45,14 +45,14 @@ def norm_size(SizeList):
 
 	return ((SizeList - Min) / (Max - Min)) * 30 
 
-def export_graph(N, c, ResultPath):
+def export_graph(N, c, mf, ResultPath):
 	MetaFilesPath = glob.glob(ResultPath + "tmp/*Meta.csv")
 	RelationFilesPath = glob.glob(ResultPath + "tmp/*Relation.csv")
 	GraphSVGPath = []
 	
-	for path in ["random_c{}_mf15_n{}_0step", "random_c{}_mf15_n{}_5000step", "random_c{}_mf15_n{}_10000step", "random_c{}_mf15_n{}_12000step", "random_c{}_mf15_n{}_14000step", "random_c{}_mf15_n{}_16000step", "random_c{}_mf15_n{}_18000step", "random_c{}_mf15_n{}_20000step"]:
+	for path in ["random_c{}_mf{}_n{}_0step", "random_c{}_mf{}_n{}_5000step", "random_c{}_mf{}_n{}_10000step", "random_c{}_mf{}_n{}_12000step", "random_c{}_mf{}_n{}_14000step", "random_c{}_mf{}_n{}_16000step", "random_c{}_mf{}_n{}_18000step", "random_c{}_mf{}_n{}_20000step"]:
 		for i in range(10):
-			GraphSVGPath.append(path.format(c, i))
+			GraphSVGPath.append(path.format(c, mf, i))
 
 	for MetaFilePath, RelationFilePath in zip(MetaFilesPath, RelationFilesPath):
 		#print("{} {}".format(MetaFilePath, RelationFilePath))
@@ -115,7 +115,8 @@ def export_graph(N, c, ResultPath):
 
 N = int(sys.argv[1])
 c = float(sys.argv[2])
-ResultPath = sys.argv[3]
+mf = int(sys.argv[3])
+ResultPath = sys.argv[4]
 print(p4c.cytoscape_ping())
-export_graph(N,c, ResultPath)
+export_graph(N, c, mf, ResultPath)
 #shutil.rmtree(ResultPath + "tmp/")
