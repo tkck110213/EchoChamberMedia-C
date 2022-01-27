@@ -12,7 +12,6 @@ const float p = 0.5;
 const float q = 0.5;
 const float p_media = p;
 const int l = 10;
-const int T = 10000;
 const float EP = 0.4;
 const float M = 0.5;
 const string follow_method = "random";

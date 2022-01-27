@@ -9,6 +9,7 @@ int MF;
 float confidence_level;
 float opinion_ranges[N_media][2];
 bool opinion_change;
+int T;
 
 void export_graph(int n, int time, SNS &sns, array<UserAgent, N_user> &users, array<MediaAgent, N_media> &media, string ResultPath){
     stringstream ResultGraphRelationPath;
@@ -222,6 +223,7 @@ int main(int argc, char *argv[]) {
     ifs >> parameter;
 
     origin_seed = parameter["origin_seed"];
+    T = parameter["T"];
 
     string abstract = parameter["abstract"];
     string date = get_date();
